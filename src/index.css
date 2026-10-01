@@ -2,8 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, sans-serif;
-  background-color: #ffffff;
-  color: #111827;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white font-sans text-gray-800 antialiased selection:bg-stone-800 selection:text-white;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto max-w-[1360px] px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-8 py-3 text-xs font-semibold uppercase tracking-[0.25em] transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-dark text-white hover:bg-brand-gold hover:text-black;
+  }
+
+  .btn-dark {
+    @apply btn bg-brand-dark text-white hover:bg-black;
+  }
+
+  .btn-outline {
+    @apply btn border border-gray-300 bg-white text-gray-900 hover:border-black;
+  }
+
+  .btn-gold-outline {
+    @apply btn border border-brand-gold text-brand-gold hover:bg-brand-gold hover:text-black;
+  }
+
+  .section-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.3em] text-brand-darkGold;
+  }
+
+  .section-title {
+    @apply font-serif text-2xl font-semibold tracking-wider text-gray-900 sm:text-3xl;
+  }
+
+  .font-luxury-serif {
+    @apply font-serif tracking-[0.25em];
+  }
+
+  /* Heading with a thin rule on each side */
+  .section-divider {
+    @apply flex items-center text-center;
+  }
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    @apply flex-1 border-b border-gray-300;
+  }
+  .section-divider:not(:empty)::before {
+    @apply mr-8;
+  }
+  .section-divider:not(:empty)::after {
+    @apply ml-8;
+  }
 }

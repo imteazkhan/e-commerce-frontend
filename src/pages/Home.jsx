@@ -1,7 +1,204 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../services/api'
-import ProductCard from '../components/ProductCard'
+import ProductCard, { ProductCardSkeleton } from '../components/ProductCard'
+import { ChevronLeftIcon, ChevronRightIcon } from '../components/Icons'
+import { unwrap } from '../utils/catalog'
+import { media } from '../utils/media'
+
+const slides = [
+  {
+    eyebrow: 'New Arrival',
+    title: 'Watch Collection',
+    text: 'Timeless precision engineered with premium rose gold and sapphire crystal.',
+    cta: 'Explore Timepieces',
+    to: '/products?category=accessories',
+    image: media.watch,
+    alt: 'Luxury gold chronograph watch',
+  },
+  {
+    eyebrow: 'Festive Edit',
+    title: 'Panjabi Collection',
+    text: 'Hand-finished embroidery and rich fabrics crafted for every celebration.',
+    cta: 'Shop Panjabi',
+    to: '/products?category=panjabi',
+    image: media.panjabi,
+    alt: 'Model in embroidered panjabi',
+  },
+  {
+    eyebrow: 'Summer Ready',
+    title: 'Polo Edition',
+    text: 'Breathable piqué cotton polos in a palette made for sunny days.',
+    cta: 'Shop Polos',
+    to: '/products?category=polo',
+    image: media.polo,
+    alt: 'Model in blue polo shirt',
+  },
+]
+
+const featuredCategories = [
+  { title: 'Polo Shirts', to: '/products?category=polo', image: media.polo, alt: 'Model in blue polo shirt on a yacht', position: 'object-top' },
+  { title: 'Panjabis', to: '/products?category=panjabi', image: media.panjabi, alt: 'Model in embroidered ethnic panjabi', position: 'object-center' },
+  { title: 'Casual Shirt', to: '/products?category=shirt', image: media.casualShirt, alt: 'Model in printed casual shirt and fedora', position: 'object-top' },
+]
+
+const giftCards = [
+  {
+    amount: 2000, serial: '10001', tier: 'Infinity Privilege',
+    card: 'bg-gradient-to-br from-[#ffe082] via-[#ffd54f] to-[#ffb300] border-amber-300 text-stone-900',
+    sub: 'text-stone-800', title: 'text-stone-900', brand: '',
+    seal: 'border-dashed border-amber-900/60 bg-amber-400/40 text-stone-900',
+  },
+  {
+    amount: 1000, serial: '0001', tier: 'Infinity Club',
+    card: 'bg-gradient-to-br from-[#26c6da] via-[#00acc1] to-[#007c91] border-cyan-400 text-white',
+    sub: 'text-cyan-100', title: 'text-white', brand: '',
+    seal: 'border-white/60 bg-cyan-800/40 text-white',
+  },
+  {
+    amount: 500, serial: '1000001', tier: 'Infinity Club',
+    card: 'bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 border-gray-300 text-gray-800',
+    sub: 'text-gray-600', title: 'text-emerald-800', brand: 'text-stone-700',
+    seal: 'border-emerald-700/50 bg-white/70 text-emerald-900',
+  },
+  {
+    amount: 5000, serial: '20001', tier: 'ShopBD Elite',
+    card: 'bg-gradient-to-br from-[#311b92] via-[#1a237e] to-[#000051] border-purple-900 text-white',
+    sub: 'text-purple-200', title: 'text-amber-300', brand: 'text-amber-300',
+    seal: 'border-amber-400 bg-purple-950/60 text-amber-300',
+  },
+]
+
+const lifestyle = [
+  { image: media.lifestylePolos, alt: 'Men in stylish polo shirts and sunglasses' },
+  { image: media.lifestyleGreen, alt: 'Model outdoors wearing a green polo shirt' },
+  { image: media.lifestyleFormal, alt: 'Two gentlemen in formal button-down shirts' },
+]
+
+const editorial = [
+  { title: 'Our History', image: media.history, alt: 'Gentleman next to a luxury car' },
+  { title: 'Our Journal', image: media.journal, alt: 'Businessman working on a laptop outdoors' },
+]
+
+function SectionDivider({ children }) {
+  return (
+    <div className="section-divider my-8">
+      <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.3em] text-gray-900">{children}</h2>
+    </div>
+  )
+}
+
+function HeroCarousel() {
+  const [index, setIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  const go = (delta) => setIndex((i) => (i + delta + slides.length) % slides.length)
+
+  useEffect(() => {
+    if (paused) return
+    const t = setInterval(() => setIndex((i) => (i + 1) % slides.length), 6000)
+    return () => clearInterval(t)
+  }, [paused])
+
+  const slide = slides[index]
+
+  return (
+    <section
+      className="relative overflow-hidden bg-black"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      aria-roledescription="carousel"
+    >
+      <div className="relative flex min-h-[460px] w-full items-center bg-gradient-to-r from-black via-[#0d0d0d] to-black lg:min-h-[580px]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(197,160,89,0.25),transparent_60%)] opacity-40" />
+
+        <button
+          onClick={() => go(-1)}
+          aria-label="Previous slide"
+          className="absolute left-3 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-stone-800 bg-black/60 text-white/80 transition-all hover:bg-black/90 hover:text-white lg:left-6"
+        >
+          <ChevronLeftIcon className="h-4 w-4" strokeWidth={2.2} />
+        </button>
+        <button
+          onClick={() => go(1)}
+          aria-label="Next slide"
+          className="absolute right-3 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-stone-800 bg-black/60 text-white/80 transition-all hover:bg-black/90 hover:text-white lg:right-6"
+        >
+          <ChevronRightIcon className="h-4 w-4" strokeWidth={2.2} />
+        </button>
+
+        <div
+          key={index}
+          className="mx-auto flex w-full max-w-[1400px] flex-col items-center justify-between gap-10 px-12 py-12 lg:flex-row lg:px-16"
+        >
+          <div className="z-10 max-w-xl animate-fade-up select-none text-center lg:text-left">
+            <h2 className="mb-1 font-serif text-2xl font-light uppercase tracking-[0.35em] text-[#d4af37] drop-shadow-md sm:text-3xl lg:text-4xl">
+              {slide.eyebrow}
+            </h2>
+            <h1 className="-mt-2 font-script text-6xl font-normal leading-none tracking-wide text-white drop-shadow-lg sm:-mt-4 sm:text-7xl lg:text-8xl">
+              {slide.title}
+            </h1>
+            <p className="mx-auto mt-4 max-w-md text-xs uppercase tracking-widest text-stone-400 sm:text-sm lg:mx-0">
+              {slide.text}
+            </p>
+            <div className="mt-8">
+              <Link to={slide.to} className="btn-gold-outline">
+                {slide.cta}
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative z-10 flex animate-fade-in items-center justify-center">
+            <div className="group relative h-[280px] w-[280px] sm:h-[400px] sm:w-[400px] lg:h-[480px] lg:w-[480px]">
+              <img
+                src={slide.image}
+                alt={slide.alt}
+                className="h-full w-full rounded-full border-4 border-brand-gold/40 object-cover shadow-gold transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+              <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-tr from-black/40 via-transparent to-amber-400/10" />
+            </div>
+          </div>
+        </div>
+
+        {/* Dots */}
+        <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+          {slides.map((s, i) => (
+            <button
+              key={s.title}
+              onClick={() => setIndex(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === index ? 'w-8 bg-brand-gold' : 'w-1.5 bg-white/40 hover:bg-white/70'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ProductRow({ loading, products }) {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+      </div>
+    )
+  }
+  if (products.length === 0) {
+    return (
+      <div className="py-10 text-center">
+        <p className="font-serif text-sm italic text-gray-400">No Product</p>
+      </div>
+    )
+  }
+  return (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+      {products.map((p) => <ProductCard key={p.id} product={p} />)}
+    </div>
+  )
+}
 
 export default function Home() {
   const [featured, setFeatured] = useState([])
@@ -14,317 +211,130 @@ export default function Home() {
       api.get('/products?sort=new'),
     ])
       .then(([f, n]) => {
-        setFeatured(f.data.data || f.data)
-        setNewArrivals((n.data.data || n.data).slice(0, 4))
+        setFeatured(unwrap(f).slice(0, 8))
+        setNewArrivals(unwrap(n).slice(0, 4))
       })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
-  const categories = [
-    { name: 'Electronics', slug: 'electronics' },
-    { name: 'Fashion', slug: 'fashion' },
-    { name: 'Home & Living', slug: 'home' },
-    { name: 'Beauty', slug: 'beauty' },
-    { name: 'Sports', slug: 'sports' },
-    { name: 'Books', slug: 'books' },
-  ]
-
-  const features = [
-    {
-      title: 'Fast Delivery',
-      text: 'Delivery within 24 to 48 hours inside Dhaka.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm10 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 0 0-1-1H3v11h10zM13 9h4l4 4v3h-8V9z" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Secure Payment',
-      text: 'bKash, Nagad and card payments accepted.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l8 4v5c0 5-3.4 8.5-8 9-4.6-.5-8-4-8-9V7l8-4z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Easy Return',
-      text: '7 day return policy on all products.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 10a9 9 0 1 1 3 6.7" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 4v6h6" />
-        </svg>
-      ),
-    },
-    {
-      title: 'Support 24/7',
-      text: 'Our support team is always available.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M18 10a6 6 0 0 0-12 0v4a3 3 0 0 0 3 3h1v-5H7m11 0h-3v5h1a3 3 0 0 0 3-3v-4z" />
-        </svg>
-      ),
-    },
-  ]
-
   return (
-    <div className="bg-white">
-      {/* Hero section */}
-      <section className="border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="inline-block text-xs font-semibold text-primary uppercase tracking-wider mb-4">
-                New Season Arrivals
-              </span>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-                Shop Smarter,<br />
-                Live Better.
-              </h1>
-              <p className="mt-5 text-gray-600 text-lg max-w-md leading-relaxed">
-                Discover quality products at honest prices. Delivered to your
-                door anywhere in Bangladesh.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  to="/products"
-                  className="px-6 py-3 bg-primary text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors"
-                >
-                  Shop Now
-                </Link>
-                <Link
-                  to="/products?sort=new"
-                  className="px-6 py-3 border border-gray-300 text-gray-900 text-sm font-semibold rounded-md hover:border-gray-900 transition-colors"
-                >
-                  Explore New
-                </Link>
-              </div>
+    <div>
+      <HeroCarousel />
 
-              {/* Stats */}
-              <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">10K+</p>
-                  <p className="text-xs text-gray-500 mt-1">Products</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">50K+</p>
-                  <p className="text-xs text-gray-500 mt-1">Customers</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">4.8</p>
-                  <p className="text-xs text-gray-500 mt-1">Rating</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Hero image block */}
-            <div className="hidden md:block">
-              <div className="aspect-square max-w-md mx-auto border border-gray-200 rounded-lg p-8 flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                  <div className="w-32 h-32 mx-auto border-2 border-gray-300 rounded-full flex items-center justify-center">
-                    <svg className="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                  </div>
-                  <p className="mt-6 text-sm text-gray-500">
-                    Quality products, honest prices
-                  </p>
+      {/* Featured categories */}
+      <section className="container-page py-12 lg:py-16">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
+          {featuredCategories.map((c) => (
+            <article key={c.title} className="group relative h-[520px] overflow-hidden shadow-sm lg:h-[590px]">
+              <img
+                src={c.image}
+                alt={c.alt}
+                className={`h-full w-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105 ${c.position}`}
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-end bg-gradient-to-t from-black/70 via-black/20 to-transparent p-4 pb-12 text-center">
+                <div className="border-y border-white/50 px-6 py-2 backdrop-blur-[2px] transition-all group-hover:border-white">
+                  <span className="mb-0.5 block text-[11px] uppercase tracking-[0.25em] text-gray-200">Shop Now</span>
+                  <h3 className="font-serif text-2xl font-medium tracking-wide text-white lg:text-3xl">{c.title}</h3>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features strip */}
-      <section className="border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((f) => (
-            <div key={f.title} className="flex items-start gap-4">
-              <div className="w-12 h-12 shrink-0 border border-gray-200 rounded-md flex items-center justify-center text-primary">
-                {f.icon}
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 text-sm">{f.title}</h3>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{f.text}</p>
-              </div>
-            </div>
+              <Link to={c.to} aria-label={`Browse ${c.title}`} className="absolute inset-0" />
+            </article>
           ))}
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="max-w-7xl mx-auto px-4 py-14">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Shop by Category
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Find exactly what you need
-            </p>
-          </div>
-          <Link
-            to="/products"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((c) => (
-            <Link
-              key={c.slug}
-              to={`/products?category=${c.slug}`}
-              className="group border border-gray-200 rounded-md p-6 text-center hover:border-primary transition-colors"
-            >
-              <div className="w-12 h-12 mx-auto border border-gray-200 rounded-full flex items-center justify-center group-hover:border-primary transition-colors">
-                <svg className="w-5 h-5 text-gray-500 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </div>
-              <p className="mt-3 text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
-                {c.name}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured products */}
-      <section className="max-w-7xl mx-auto px-4 py-10">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Featured Products
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Hand picked for you
-            </p>
-          </div>
-          <Link
-            to="/products"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            See all
-          </Link>
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="border border-gray-200 rounded-md h-72 animate-pulse bg-gray-50"
-              ></div>
-            ))}
-          </div>
-        ) : featured.length === 0 ? (
-          <p className="text-sm text-gray-500">No featured products yet.</p>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featured.slice(0, 8).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+      {/* Summer collection */}
+      <section id="summer-collection" className="container-page py-8">
+        <SectionDivider>Summer Collection</SectionDivider>
+        <ProductRow loading={loading} products={featured} />
+        {!loading && featured.length > 0 && (
+          <div className="mt-10 text-center">
+            <Link to="/products" className="btn-outline">View all</Link>
           </div>
         )}
-      </section>
-
-      {/* Promo banner */}
-      <section className="max-w-7xl mx-auto px-4 py-10">
-        <div className="border border-gray-200 rounded-lg p-8 md:p-12 bg-gray-900 text-white">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                Limited Time
-              </span>
-              <h2 className="text-3xl md:text-4xl font-bold mt-3 leading-tight">
-                Up to 40% off on<br />selected items
-              </h2>
-              <p className="text-gray-400 mt-4 text-sm max-w-md">
-                Grab your favourite products before the offer ends. Free
-                shipping on orders above 1000 Tk.
-              </p>
-              <Link
-                to="/products?discount=1"
-                className="mt-6 inline-block px-6 py-3 bg-white text-gray-900 text-sm font-semibold rounded-md hover:bg-gray-100 transition-colors"
-              >
-                Shop the Sale
-              </Link>
-            </div>
-            <div className="hidden md:block">
-              <div className="aspect-video border border-gray-700 rounded-md flex items-center justify-center">
-                <p className="text-gray-500 text-sm">Sale Banner</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* New arrivals */}
-      <section className="max-w-7xl mx-auto px-4 py-10 pb-16">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              New Arrivals
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Freshly added to the store
-            </p>
-          </div>
-          <Link
-            to="/products?sort=new"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            See all
-          </Link>
-        </div>
+      {(loading || newArrivals.length > 0) && (
+        <section className="container-page py-8">
+          <SectionDivider>New Arrival</SectionDivider>
+          <ProductRow loading={loading} products={newArrivals} />
+        </section>
+      )}
 
-        {newArrivals.length === 0 ? (
-          <p className="text-sm text-gray-500">No products yet.</p>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {newArrivals.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        )}
+      {/* Gift cards */}
+      <section className="container-page py-10">
+        <SectionDivider>Gift Card</SectionDivider>
+        <div className="grid grid-cols-1 gap-6 pt-4 sm:grid-cols-2 lg:grid-cols-4">
+          {giftCards.map((g) => (
+            <article key={g.amount} className="group flex cursor-pointer flex-col">
+              <div
+                className={`relative flex aspect-[16/10] w-full flex-col justify-between overflow-hidden rounded-xl border p-5 shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg ${g.card}`}
+              >
+                <div className="flex items-start justify-between">
+                  <span className="font-mono text-[10px] opacity-70">SN No: {g.serial}</span>
+                  <span className={`font-serif text-xs font-bold italic ${g.brand}`}>ShopBD</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-[10px] uppercase tracking-widest ${g.sub}`}>Prepaid</p>
+                    <h4 className={`font-script text-3xl font-bold leading-none ${g.title}`}>Gift Card</h4>
+                  </div>
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-full border-2 text-xs font-bold shadow-inner ${g.seal}`}>
+                    {g.amount}
+                  </div>
+                </div>
+                <div className={`text-right text-[8px] font-semibold uppercase tracking-wider opacity-80 ${g.brand}`}>
+                  {g.tier}
+                </div>
+              </div>
+              <div className="mt-4 text-left">
+                <h5 className="text-xs font-normal text-gray-700">Gift Card-{g.amount}</h5>
+                <p className="mt-1 text-xs font-bold text-black">
+                  ৳{g.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
-      {/* Newsletter */}
-      <section className="border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-14">
-          <div className="max-w-xl mx-auto text-center">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Stay Updated
-            </h2>
-            <p className="text-sm text-gray-500 mt-2">
-              Get notified about new arrivals and exclusive offers.
-            </p>
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="mt-6 flex border border-gray-300 rounded-md overflow-hidden focus-within:border-primary"
-            >
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 text-sm outline-none"
-                required
+      {/* Lifestyle gallery */}
+      <section className="container-page py-12">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
+          {lifestyle.map((l) => (
+            <div key={l.alt} className="group relative aspect-[4/5] overflow-hidden shadow-sm sm:aspect-auto sm:h-[580px]">
+              <img
+                src={l.image}
+                alt={l.alt}
+                loading="lazy"
+                className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
               />
-              <button
-                type="submit"
-                className="bg-primary text-white px-6 text-sm font-semibold hover:bg-blue-800 transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Editorial */}
+      <section className="container-page pb-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
+          {editorial.map((e) => (
+            <div key={e.title} className="group relative h-[320px] cursor-pointer overflow-hidden shadow-sm sm:h-[380px]">
+              <img
+                src={e.image}
+                alt={e.alt}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 p-6 text-center transition-colors group-hover:bg-black/35">
+                <h3 className="mb-2 font-serif text-3xl tracking-wider text-white sm:text-4xl">{e.title}</h3>
+                <a href="#" className="text-xs font-light uppercase tracking-widest text-white/90 underline underline-offset-4 hover:text-white">
+                  Read more
+                </a>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </div>

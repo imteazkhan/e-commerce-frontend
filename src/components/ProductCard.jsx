@@ -1,31 +1,69 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import ProductImage from './ProductImage'
+import { categoryName, formatPrice } from '../utils/catalog'
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart()
+  const [added, setAdded] = useState(false)
+
+  const outOfStock = product.stock !== undefined && product.stock !== null && Number(product.stock) <= 0
+  const category = categoryName(product)
+
+  const handleAdd = (e) => {
+    e.preventDefault()
+    if (outOfStock) return
+    addToCart(product)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1500)
+  }
 
   return (
-    <div className="border border-gray-200 rounded p-4 bg-white">
-      <img
-        src={product.image || 'https://via.placeholder.com/300'}
-        alt={product.name}
-        className="w-full h-48 object-cover rounded"
-      />
-      <h3 className="mt-3 font-semibold text-gray-900">{product.name}</h3>
-      <p className="text-primary font-bold mt-1">৳ {product.price}</p>
-      <div className="mt-3 flex gap-2">
-        <Link
-          to={`/products/${product.id}`}
-          className="flex-1 text-center border border-gray-300 py-1 rounded text-sm"
-        >
-          View
-        </Link>
-        <button
-          onClick={() => addToCart(product)}
-          className="flex-1 bg-primary text-white py-1 rounded text-sm"
-        >
-          Add to Cart
-        </button>
+    <Link to={`/products/${product.id}`} className="group flex flex-col">
+      <div className="relative aspect-[3/4] overflow-hidden bg-stone-100">
+        <ProductImage
+          src={product.image}
+          alt={product.name}
+          className="h-full w-full object-top transition-transform duration-700 ease-out group-hover:scale-105"
+        />
+
+        {outOfStock && (
+          <span className="absolute left-0 top-3 bg-black px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-white">
+            Sold out
+          </span>
+        )}
+
+        {!outOfStock && (
+          <button
+            onClick={handleAdd}
+            className={`absolute inset-x-0 bottom-0 py-3 text-[11px] font-semibold uppercase tracking-[0.25em] transition-all duration-300 sm:translate-y-full sm:group-hover:translate-y-0 ${
+              added ? 'bg-brand-gold text-black sm:translate-y-0' : 'bg-black/85 text-white hover:bg-black'
+            }`}
+          >
+            {added ? 'Added ✓' : 'Add to cart'}
+          </button>
+        )}
+      </div>
+
+      <div className="mt-4 text-left">
+        {category && <p className="text-[10px] uppercase tracking-widest text-gray-400">{category}</p>}
+        <h3 className="mt-0.5 line-clamp-1 text-xs font-normal text-gray-700 transition-colors group-hover:text-black">
+          {product.name}
+        </h3>
+        <p className="mt-1 text-xs font-bold text-black">{formatPrice(product.price)}</p>
+      </div>
+    </Link>
+  )
+}
+
+export function ProductCardSkeleton() {
+  return (
+    <div>
+      <div className="aspect-[3/4] animate-pulse bg-stone-100" />
+      <div className="mt-4 space-y-2">
+        <div className="h-3 w-3/4 animate-pulse bg-stone-100" />
+        <div className="h-3 w-1/4 animate-pulse bg-stone-100" />
       </div>
     </div>
   )

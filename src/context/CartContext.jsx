@@ -14,15 +14,15 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cart))
   }, [cart])
 
-  const addToCart = (product) => {
+  const addToCart = (product, qty = 1) => {
     setCart((prev) => {
       const found = prev.find((i) => i.id === product.id)
       if (found) {
         return prev.map((i) =>
-          i.id === product.id ? { ...i, qty: i.qty + 1 } : i
+          i.id === product.id ? { ...i, qty: i.qty + qty } : i
         )
       }
-      return [...prev, { ...product, qty: 1 }]
+      return [...prev, { ...product, qty }]
     })
   }
 
