@@ -7,7 +7,7 @@ export const categories = [
   { name: 'Pant', slug: 'pant' },
   { name: 'Panjabi', slug: 'panjabi' },
   { name: 'Accessories', slug: 'accessories' },
-  { name: 'Ethnic Wear', slug: 'ethnic' },
+  //{ name: 'Ethnic Wear', slug: 'ethnic' },
 ]
 
 export const formatPrice = (value) =>

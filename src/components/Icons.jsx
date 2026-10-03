@@ -88,6 +88,37 @@ export const MailIcon = (p) => (
 export const ChevronLeftIcon = (p) => (
   <Icon {...p}><path d="m15 6-6 6 6 6" /></Icon>
 )
+export const ArrowLeftIcon = (p) => (
+  <Icon {...p}><path d="M19 12H5M11 18l-6-6 6-6" /></Icon>
+)
+export const HeartIcon = ({ filled = false, ...p }) => (
+  <Icon {...p} {...(filled ? { fill: 'currentColor' } : {})}>
+    <path d="M12 20.5s-7.2-4.5-9.5-8.8C1 8.3 2.3 5 5.6 4.2c2-.5 3.9.3 5 1.9l1.4 2 1.4-2c1.1-1.6 3-2.4 5-1.9 3.3.8 4.6 4.1 3.1 7.5-2.3 4.3-9.5 8.8-9.5 8.8z" />
+  </Icon>
+)
+export const GridSmallIcon = (p) => (
+  <Icon {...p} strokeWidth={0}>
+    {[3, 10.5, 18].flatMap((y) =>
+      [3, 10.5, 18].map((x) => <rect key={`${x}-${y}`} x={x} y={y} width="3" height="3" fill="currentColor" rx="0.5" />)
+    )}
+  </Icon>
+)
+export const GridIcon = (p) => (
+  <Icon {...p} strokeWidth={0}>
+    <rect x="3" y="3" width="8" height="8" fill="currentColor" rx="0.5" />
+    <rect x="13" y="3" width="8" height="8" fill="currentColor" rx="0.5" />
+    <rect x="3" y="13" width="8" height="8" fill="currentColor" rx="0.5" />
+    <rect x="13" y="13" width="8" height="8" fill="currentColor" rx="0.5" />
+  </Icon>
+)
+export const ListIcon = (p) => (
+  <Icon {...p}>
+    <rect x="3" y="4.5" width="3" height="3" fill="currentColor" stroke="none" />
+    <rect x="3" y="10.5" width="3" height="3" fill="currentColor" stroke="none" />
+    <rect x="3" y="16.5" width="3" height="3" fill="currentColor" stroke="none" />
+    <path d="M9 6h12M9 12h12M9 18h12" />
+  </Icon>
+)
 
 // Filled brand icons for social links
 const brandPaths = {

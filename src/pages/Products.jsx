@@ -1,18 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import api from '../services/api'
+import { useCart } from '../context/CartContext'
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard'
+import ProductImage from '../components/ProductImage'
+import Pagination from '../components/Pagination'
 import {
-  ChevronRightIcon,
   CloseIcon,
   FilterIcon,
+  GridIcon,
+  GridSmallIcon,
+  ListIcon,
   SearchIcon,
 } from '../components/Icons'
-import { categories, categorySlug, unwrap } from '../utils/catalog'
+import { categories, categorySlug, formatPrice, unwrap } from '../utils/catalog'
 
 const sortOptions = [
   { value: '', label: 'Featured' },
-  { value: 'new', label: 'Newest' },
+  { value: 'new', label: 'Newness' },
   { value: 'price_asc', label: 'Price: Low to High' },
   { value: 'price_desc', label: 'Price: High to Low' },
 ]
@@ -23,6 +28,14 @@ const priceRanges = [
   { value: '500-2000', label: '৳500 – ৳2,000' },
   { value: '2000-5000', label: '৳2,000 – ৳5,000' },
   { value: '5000-', label: 'Over ৳5,000' },
+]
+
+const PAGE_SIZE = 16
+
+const viewModes = [
+  { id: 'dense', Icon: GridSmallIcon, label: 'Compact grid' },
+  { id: 'grid', Icon: GridIcon, label: 'Grid view' },
+  { id: 'list', Icon: ListIcon, label: 'List view' },
 ]
 
 function applyFilters(products, { category, search, price, sort }) {
@@ -84,7 +97,6 @@ function FilterPanel({ params, setParam }) {
                 }`}
               >
                 {c.name}
-                {category === c.slug && <ChevronRightIcon className="w-4 h-4" />}
               </button>
             </li>
           ))}
@@ -128,6 +140,49 @@ function FilterPanel({ params, setParam }) {
   )
 }
 
+function ProductListRow({ product }) {
+  const { addToCart } = useCart()
+  const [added, setAdded] = useState(false)
+  const outOfStock = product.stock !== undefined && product.stock !== null && Number(product.stock) <= 0
+
+  const handleAdd = (e) => {
+    e.preventDefault()
+    if (outOfStock) return
+    addToCart(product)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1500)
+  }
+
+  return (
+    <Link to={`/products/${product.id}`} className="group flex items-center gap-5 py-5">
+      <div className="h-24 w-20 flex-shrink-0 overflow-hidden bg-stone-100 sm:h-32 sm:w-28">
+        <ProductImage src={product.image} alt={product.name} className="h-full w-full object-top" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-sm font-medium uppercase tracking-wide text-gray-800 transition-colors group-hover:text-black sm:text-base">
+          {product.name}
+        </h3>
+        <p className="mt-1.5 text-sm font-bold text-black">{formatPrice(product.price)}</p>
+        {outOfStock && (
+          <span className="mt-2 inline-block bg-black px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-white">
+            Sold out
+          </span>
+        )}
+      </div>
+      {!outOfStock && (
+        <button
+          onClick={handleAdd}
+          className={`hidden flex-shrink-0 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors sm:block ${
+            added ? 'bg-brand-gold text-black' : 'bg-black text-white hover:bg-stone-800'
+          }`}
+        >
+          {added ? 'Added ✓' : 'Add to cart'}
+        </button>
+      )}
+    </Link>
+  )
+}
+
 export default function Products() {
   const [params, setParams] = useSearchParams()
   const [products, setProducts] = useState([])
@@ -135,6 +190,8 @@ export default function Products() {
   const [error, setError] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchInput, setSearchInput] = useState(params.get('search') || '')
+  const [view, setView] = useState('grid')
+  const [page, setPage] = useState(1)
 
   const category = params.get('category') || ''
   const search = params.get('search') || ''
@@ -143,6 +200,7 @@ export default function Products() {
   const discount = params.get('discount') || ''
 
   useEffect(() => setSearchInput(search), [search])
+  useEffect(() => setPage(1), [category, search, price, sort, discount])
 
   // Server-side params; price filtering and sorting are also applied client-side.
   useEffect(() => {
@@ -166,12 +224,23 @@ export default function Products() {
     [products, category, search, price, sort]
   )
 
+  const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
+  const paged = useMemo(
+    () => visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [visible, page]
+  )
+
   const setParam = (key, value) => {
     const next = new URLSearchParams(params)
     if (value) next.set(key, value)
     else next.delete(key)
     setParams(next)
     setDrawerOpen(false)
+  }
+
+  const goToPage = (p) => {
+    setPage(p)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const activeChips = [
@@ -182,141 +251,170 @@ export default function Products() {
   ].filter(Boolean)
 
   const title = categories.find((c) => c.slug === category)?.name
-    || (sort === 'new' ? 'New arrivals' : discount ? 'Deals' : 'All products')
+    || (sort === 'new' ? 'New arrivals' : discount ? 'Deals' : 'Summer Collection')
+
+  const gridCols =
+    view === 'dense'
+      ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5'
+      : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
 
   return (
     <div>
       {/* Header */}
-      <section className="border-b border-stone-100 bg-gradient-to-b from-stone-50 to-white">
-        <div className="container-page py-10 sm:py-14">
-          <nav className="flex items-center gap-1.5 text-xs text-stone-500">
+      <section className="border-b border-stone-100 bg-white">
+        <div className="container-page py-12 text-center sm:py-16">
+          <h1 className="text-4xl font-light tracking-wide text-stone-900 sm:text-5xl">{title}</h1>
+          <nav className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500">
             <Link to="/" className="hover:text-stone-900">Home</Link>
-            <ChevronRightIcon className="w-3.5 h-3.5" />
-            <span className="text-stone-900">Shop</span>
+            <span>/</span>
+            <span className="text-stone-900">{title}</span>
           </nav>
-          <h1 className="mt-4 text-3xl font-serif font-semibold tracking-wider text-stone-900 sm:text-4xl">{title}</h1>
-          <p className="mt-2 text-stone-500">
-            Browse our collection of quality products at honest prices.
-          </p>
+        </div>
+      </section>
 
+      <div className="container-page py-10">
+        {/* Intro + search */}
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <p className="max-w-2xl text-sm leading-relaxed text-stone-500">
+            Step into this season with distinction. Richman introduces a curated collection of{' '}
+            <strong className="font-semibold text-stone-800">premium formal wear</strong>, casual wear and accessories
+            crafted for the man who values sophistication, style, and structure.
+          </p>
           <form
             onSubmit={(e) => {
               e.preventDefault()
               setParam('search', searchInput.trim())
             }}
-            className="relative mt-6 max-w-xl"
+            className="relative w-full sm:w-64"
           >
-            <SearchIcon className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-400" />
+            <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
             <input
               type="search"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search for products..."
-              className="w-full rounded-full border border-stone-200 bg-white py-3.5 pl-14 pr-32 text-sm shadow-soft outline-none transition focus:border-primary-300 focus:ring-4 focus:ring-primary-50"
+              className="w-full border border-stone-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-stone-900"
             />
-            <button type="submit" className="btn-primary absolute right-1.5 top-1/2 -translate-y-1/2 !py-2.5">
-              Search
-            </button>
           </form>
         </div>
-      </section>
 
-      <div className="container-page grid gap-10 py-10 lg:grid-cols-[240px_1fr]">
-        {/* Sidebar */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-32">
-            <FilterPanel params={params} setParam={setParam} />
-          </div>
-        </aside>
+        {/* Toolbar */}
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-y border-stone-100 py-3">
+          <p className="text-sm text-stone-500">
+            {loading ? (
+              'Loading…'
+            ) : (
+              <>
+                Showing <span className="font-medium text-stone-900">{paged.length}</span> of{' '}
+                <span className="font-medium text-stone-900">{visible.length}</span> results
+              </>
+            )}
+          </p>
 
-        <div>
-          {/* Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-stone-500">
-              {loading ? 'Loading…' : (
-                <>Showing <span className="font-semibold text-stone-900">{visible.length}</span> products</>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="inline-flex items-center gap-2 border border-stone-200 px-3.5 py-2 text-xs font-medium uppercase tracking-wider text-stone-700 hover:border-stone-900"
+            >
+              <FilterIcon className="h-4 w-4" />
+              Filters
+              {activeChips.length > 0 && (
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-stone-900 text-[9px] font-bold text-white">
+                  {activeChips.length}
+                </span>
               )}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="inline-flex items-center gap-2 rounded-full border border-stone-200 px-4 py-2 text-sm font-medium text-stone-700 hover:border-stone-900 lg:hidden"
-              >
-                <FilterIcon className="w-4 h-4" />
-                Filters
-                {activeChips.length > 0 && (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white">
-                    {activeChips.length}
-                  </span>
-                )}
-              </button>
-              <select
-                value={sort}
-                onChange={(e) => setParam('sort', e.target.value)}
-                className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 outline-none hover:border-stone-900 focus:ring-4 focus:ring-primary-50"
-              >
-                {sortOptions.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+            </button>
 
-          {/* Active filters */}
-          {activeChips.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              {activeChips.map((chip) => (
+            <div className="hidden items-center gap-1 sm:flex">
+              {viewModes.map(({ id, Icon, label }) => (
                 <button
-                  key={chip.key}
-                  onClick={() => setParam(chip.key, '')}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-100"
+                  key={id}
+                  onClick={() => setView(id)}
+                  aria-label={label}
+                  aria-pressed={view === id}
+                  className={`flex h-9 w-9 items-center justify-center border transition ${
+                    view === id
+                      ? 'border-stone-900 bg-stone-900 text-white'
+                      : 'border-stone-200 text-stone-400 hover:border-stone-900 hover:text-stone-900'
+                  }`}
                 >
-                  {chip.label}
-                  <CloseIcon className="w-3.5 h-3.5" />
+                  <Icon className="h-4 w-4" />
                 </button>
               ))}
-              <button
-                onClick={() => setParams(new URLSearchParams())}
-                className="px-2 text-xs font-medium text-stone-500 underline-offset-4 hover:text-stone-900 hover:underline"
-              >
-                Clear all
-              </button>
             </div>
-          )}
 
-          {/* Grid */}
-          <div className="mt-8">
-            {loading ? (
-              <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)}
-              </div>
-            ) : error ? (
-              <div className=" border border-rose-100 bg-rose-50 py-16 text-center">
-                <p className="text-sm font-medium text-rose-700">{error}</p>
-              </div>
-            ) : visible.length === 0 ? (
-              <div className=" border border-dashed border-stone-200 px-6 py-20 text-center">
-                <span className="mx-auto flex h-14 w-14 items-center justify-center bg-stone-100 text-stone-400">
-                  <SearchIcon className="w-6 h-6" />
-                </span>
-                <h3 className="mt-4 font-semibold text-stone-900">No products found</h3>
-                <p className="mt-1 text-sm text-stone-500">Try adjusting your search or filters.</p>
-                <button onClick={() => setParams(new URLSearchParams())} className="btn-outline mt-6">
-                  Reset filters
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3">
-                {visible.map((p) => <ProductCard key={p.id} product={p} />)}
-              </div>
-            )}
+            <select
+              value={sort}
+              onChange={(e) => setParam('sort', e.target.value)}
+              className="border border-stone-200 bg-white px-4 py-2 text-xs font-medium uppercase tracking-wider text-stone-700 outline-none hover:border-stone-900 focus:ring-4 focus:ring-primary-50"
+            >
+              {sortOptions.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
           </div>
         </div>
+
+        {/* Active filters */}
+        {activeChips.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {activeChips.map((chip) => (
+              <button
+                key={chip.key}
+                onClick={() => setParam(chip.key, '')}
+                className="inline-flex items-center gap-1.5 bg-stone-100 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-200"
+              >
+                {chip.label}
+                <CloseIcon className="w-3.5 h-3.5" />
+              </button>
+            ))}
+            <button
+              onClick={() => setParams(new URLSearchParams())}
+              className="px-2 text-xs font-medium text-stone-500 underline-offset-4 hover:text-stone-900 hover:underline"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+
+        {/* Results */}
+        <div className="mt-8">
+          {loading ? (
+            <div className={`grid gap-4 sm:gap-6 ${gridCols}`}>
+              {Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+            </div>
+          ) : error ? (
+            <div className="border border-rose-100 bg-rose-50 py-16 text-center">
+              <p className="text-sm font-medium text-rose-700">{error}</p>
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="border border-dashed border-stone-200 px-6 py-20 text-center">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center bg-stone-100 text-stone-400">
+                <SearchIcon className="w-6 h-6" />
+              </span>
+              <h3 className="mt-4 font-semibold text-stone-900">No products found</h3>
+              <p className="mt-1 text-sm text-stone-500">Try adjusting your search or filters.</p>
+              <button onClick={() => setParams(new URLSearchParams())} className="btn-outline mt-6">
+                Reset filters
+              </button>
+            </div>
+          ) : view === 'list' ? (
+            <div className="divide-y divide-stone-100">
+              {paged.map((p) => <ProductListRow key={p.id} product={p} />)}
+            </div>
+          ) : (
+            <div className={`grid gap-4 sm:gap-6 ${gridCols}`}>
+              {paged.map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          )}
+        </div>
+
+        <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
       </div>
 
-      {/* Mobile filter drawer */}
+      {/* Filters drawer */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-[60] lg:hidden">
+        <div className="fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
           <div className="absolute inset-y-0 left-0 flex w-full max-w-xs flex-col overflow-y-auto bg-white p-6 shadow-lift">
             <div className="mb-6 flex items-center justify-between">

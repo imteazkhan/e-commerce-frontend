@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="100%" height="100%">
+  <defs>
+    <clipPath id="roundedIcon">
+      <rect x="0" y="0" width="1024" height="1024" rx="200" ry="200" />
+    </clipPath>
+    <linearGradient id="cartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+  </defs>
+
+  <g clip-path="url(#roundedIcon)">
+    <!-- Background -->
+    <rect x="0" y="0" width="1024" height="1024" fill="#eff6ff" />
+
+    <!-- Shopping Cart Body -->
+    <g fill="none" stroke="url(#cartGradient)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Cart handle -->
+      <path d="M 160 240 L 256 240 L 336 640 L 800 640" />
+      <!-- Cart basket -->
+      <path d="M 336 640 L 368 448 L 832 448 L 800 640" />
+      <!-- Cart bottom line -->
+      <path d="M 336 640 L 800 640" />
+    </g>
+
+    <!-- Wheels -->
+    <circle cx="400" cy="800" r="64" fill="url(#cartGradient)" />
+    <circle cx="736" cy="800" r="64" fill="url(#cartGradient)" />
+
+    <!-- Inner wheel highlights -->
+    <circle cx="400" cy="800" r="24" fill="#eff6ff" />
+    <circle cx="736" cy="800" r="24" fill="#eff6ff" />
+  </g>
+</svg>

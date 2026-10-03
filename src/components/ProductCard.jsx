@@ -2,14 +2,13 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import ProductImage from './ProductImage'
-import { categoryName, formatPrice } from '../utils/catalog'
+import { formatPrice } from '../utils/catalog'
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart()
   const [added, setAdded] = useState(false)
 
   const outOfStock = product.stock !== undefined && product.stock !== null && Number(product.stock) <= 0
-  const category = categoryName(product)
 
   const handleAdd = (e) => {
     e.preventDefault()
@@ -47,11 +46,10 @@ export default function ProductCard({ product }) {
       </div>
 
       <div className="mt-4 text-left">
-        {category && <p className="text-[10px] uppercase tracking-widest text-gray-400">{category}</p>}
-        <h3 className="mt-0.5 line-clamp-1 text-xs font-normal text-gray-700 transition-colors group-hover:text-black">
+        <h3 className="line-clamp-2 text-[11px] font-medium uppercase tracking-wide text-gray-700 transition-colors group-hover:text-black">
           {product.name}
         </h3>
-        <p className="mt-1 text-xs font-bold text-black">{formatPrice(product.price)}</p>
+        <p className="mt-1.5 text-xs font-bold text-black">{formatPrice(product.price)}</p>
       </div>
     </Link>
   )
