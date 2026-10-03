@@ -3,13 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { BagIcon, CloseIcon, MenuIcon, SearchIcon, UserIcon } from './Icons'
-import { categories } from '../utils/catalog'
+import { useCategories } from '../context/CategoryContext'
 import Logo from './Logo'
 
-const menu = [
+const fixedMenu = [
   { to: '/products?discount=1', label: 'Sale', sale: true },
   { to: '/products?sort=new', label: 'New Arrival' },
-  ...categories.map((c) => ({ to: `/products?category=${c.slug}`, label: c.name })),
 ]
 
 function accountLinks(user) {
@@ -25,6 +24,7 @@ function accountLinks(user) {
 export default function Navbar() {
   const { user, logout } = useAuth()
   const { cart } = useCart()
+  const { activeCategories: categories } = useCategories()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -33,6 +33,10 @@ export default function Navbar() {
   const [query, setQuery] = useState('')
   const menuRef = useRef(null)
 
+  const menu = [
+    ...fixedMenu,
+    ...categories.map((c) => ({ to: `/products?category=${c.slug}`, label: c.name })),
+  ]
   const cartCount = cart.reduce((sum, i) => sum + (i.qty || 1), 0)
   const links = accountLinks(user)
   const current = location.pathname + location.search

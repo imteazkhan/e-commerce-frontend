@@ -13,7 +13,8 @@ import {
   ListIcon,
   SearchIcon,
 } from '../components/Icons'
-import { categories, categorySlug, formatPrice, unwrap } from '../utils/catalog'
+import { useCategories } from '../context/CategoryContext'
+import { categorySlug, formatPrice, unwrap } from '../utils/catalog'
 
 const sortOptions = [
   { value: '', label: 'Featured' },
@@ -80,6 +81,7 @@ function applyFilters(products, { category, search, price, sort }) {
 function FilterPanel({ params, setParam }) {
   const category = params.get('category') || ''
   const price = params.get('price') || ''
+  const { activeCategories: categories } = useCategories()
 
   return (
     <div className="space-y-8">
@@ -185,6 +187,7 @@ function ProductListRow({ product }) {
 
 export default function Products() {
   const [params, setParams] = useSearchParams()
+  const { activeCategories: categories } = useCategories()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

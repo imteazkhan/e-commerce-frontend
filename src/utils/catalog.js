@@ -1,15 +1,3 @@
-// Menu categories — slugs are sent to the API as ?category=<slug>
-export const categories = [
-  { name: 'Blazer', slug: 'blazer' },
-  { name: 'Shirt', slug: 'shirt' },
-  { name: 'T-Shirt', slug: 't-shirt' },
-  { name: 'Polo', slug: 'polo' },
-  { name: 'Pant', slug: 'pant' },
-  { name: 'Panjabi', slug: 'panjabi' },
-  { name: 'Accessories', slug: 'accessories' },
-  //{ name: 'Ethnic Wear', slug: 'ethnic' },
-]
-
 export const formatPrice = (value) =>
   `৳${Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 

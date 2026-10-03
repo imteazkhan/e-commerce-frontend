@@ -5,12 +5,15 @@ import App from './App.jsx'
 import './index.css'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
+import { CategoryProvider } from './context/CategoryContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <AuthProvider>
       <CartProvider>
-        <App />
+        <CategoryProvider>
+          <App />
+        </CategoryProvider>
       </CartProvider>
     </AuthProvider>
   </BrowserRouter>

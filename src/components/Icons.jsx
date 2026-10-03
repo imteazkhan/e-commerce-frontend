@@ -135,3 +135,50 @@ export const BrandIcon = ({ name, className = 'w-3.5 h-3.5' }) => (
     <path d={brandPaths[name]} />
   </svg>
 )
+
+// Admin panel
+export const DashboardIcon = (p) => (
+  <Icon {...p}><rect x="3" y="3" width="7" height="9" rx="1" /><rect x="14" y="3" width="7" height="5" rx="1" /><rect x="14" y="12" width="7" height="9" rx="1" /><rect x="3" y="16" width="7" height="5" rx="1" /></Icon>
+)
+export const ReceiptIcon = (p) => (
+  <Icon {...p}><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" /><path d="M9 8h6M9 12h6M9 16h3" /></Icon>
+)
+export const BoxIcon = (p) => (
+  <Icon {...p}><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="m4 7.5 8 4.5 8-4.5M12 12v9" /></Icon>
+)
+export const TagIcon = (p) => (
+  <Icon {...p}><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9z" /><circle cx="7.5" cy="7.5" r="1.5" /></Icon>
+)
+export const UsersIcon = (p) => (
+  <Icon {...p}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6" /></Icon>
+)
+export const LayersIcon = (p) => (
+  <Icon {...p}><path d="m12 3 9 5-9 5-9-5 9-5z" /><path d="m3 13 9 5 9-5" /></Icon>
+)
+export const DownloadIcon = (p) => (
+  <Icon {...p}><path d="M12 4v11M7 10l5 5 5-5M4 20h16" /></Icon>
+)
+export const PrinterIcon = (p) => (
+  <Icon {...p}><path d="M7 8V3h10v5" /><rect x="3" y="8" width="18" height="9" rx="1" /><path d="M7 14h10v7H7z" /></Icon>
+)
+export const EditIcon = (p) => (
+  <Icon {...p}><path d="M4 20h4L19 9l-4-4L4 16v4z" /><path d="m13.5 6.5 4 4" /></Icon>
+)
+export const TrashIcon = (p) => (
+  <Icon {...p}><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></Icon>
+)
+export const AlertIcon = (p) => (
+  <Icon {...p}><path d="M12 3 2 20h20L12 3z" /><path d="M12 10v4M12 17h.01" /></Icon>
+)
+export const RefreshIcon = (p) => (
+  <Icon {...p}><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4" /></Icon>
+)
+export const ExternalIcon = (p) => (
+  <Icon {...p}><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></Icon>
+)
+export const PauseIcon = (p) => (
+  <Icon {...p}><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></Icon>
+)
+export const PlayIcon = (p) => (
+  <Icon {...p}><path d="M7 4.5v15l12-7.5-12-7.5z" /></Icon>
+)

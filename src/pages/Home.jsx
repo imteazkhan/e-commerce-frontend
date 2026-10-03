@@ -4,6 +4,7 @@ import api from '../services/api'
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard'
 import { ChevronLeftIcon, ChevronRightIcon } from '../components/Icons'
 import { unwrap } from '../utils/catalog'
+import { useCategories } from '../context/CategoryContext'
 import { media } from '../utils/media'
 
 const slides = [
@@ -88,19 +89,22 @@ function SectionDivider({ children }) {
   )
 }
 
-function HeroCarousel() {
+function HeroCarousel({ slides }) {
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
 
   const go = (delta) => setIndex((i) => (i + delta + slides.length) % slides.length)
 
   useEffect(() => {
-    if (paused) return
+    if (paused || slides.length < 2) return
     const t = setInterval(() => setIndex((i) => (i + 1) % slides.length), 6000)
     return () => clearInterval(t)
-  }, [paused])
+  }, [paused, slides.length])
 
-  const slide = slides[index]
+  if (!slides.length) return null
+  // The slide list can shrink when an admin pauses a category.
+  const current = index % slides.length
+  const slide = slides[current]
 
   return (
     <section
@@ -128,7 +132,7 @@ function HeroCarousel() {
         </button>
 
         <div
-          key={index}
+          key={current}
           className="mx-auto flex w-full max-w-[1400px] flex-col items-center justify-between gap-10 px-12 py-12 lg:flex-row lg:px-16"
         >
           <div className="z-10 max-w-xl animate-fade-up select-none text-center lg:text-left">
@@ -168,7 +172,7 @@ function HeroCarousel() {
               onClick={() => setIndex(i)}
               aria-label={`Go to slide ${i + 1}`}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === index ? 'w-8 bg-brand-gold' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                i === current ? 'w-8 bg-brand-gold' : 'w-1.5 bg-white/40 hover:bg-white/70'
               }`}
             />
           ))}
@@ -204,6 +208,15 @@ export default function Home() {
   const [featured, setFeatured] = useState([])
   const [newArrivals, setNewArrivals] = useState([])
   const [loading, setLoading] = useState(true)
+  const { activeCategories, loading: categoriesLoading } = useCategories()
+
+  // Hide slides and tiles whose category has been paused or deleted by an admin.
+  const isLive = (to) => {
+    const slug = new URLSearchParams(to.split('?')[1]).get('category')
+    return !slug || categoriesLoading || activeCategories.some((a) => a.slug === slug)
+  }
+  const liveSlides = slides.filter((s) => isLive(s.to))
+  const tiles = featuredCategories.filter((c) => isLive(c.to))
 
   useEffect(() => {
     Promise.all([
@@ -220,12 +233,12 @@ export default function Home() {
 
   return (
     <div>
-      <HeroCarousel />
+      <HeroCarousel slides={liveSlides} />
 
       {/* Featured categories */}
       <section className="container-page py-12 lg:py-16">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
-          {featuredCategories.map((c) => (
+          {tiles.map((c) => (
             <article key={c.title} className="group relative h-[520px] overflow-hidden shadow-sm lg:h-[590px]">
               <img
                 src={c.image}
