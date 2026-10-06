@@ -42,8 +42,6 @@ const viewModes = [
 function applyFilters(products, { category, search, price, sort }) {
   let list = [...products]
 
-  // Only filter by category client-side when products carry category info;
-  // otherwise trust the API, which already received ?category=.
   if (category && list.some((p) => categorySlug(p))) {
     list = list.filter((p) => categorySlug(p).includes(category))
   }
@@ -205,7 +203,6 @@ export default function Products() {
   useEffect(() => setSearchInput(search), [search])
   useEffect(() => setPage(1), [category, search, price, sort, discount])
 
-  // Server-side params; price filtering and sorting are also applied client-side.
   useEffect(() => {
     setLoading(true)
     setError('')
@@ -263,46 +260,43 @@ export default function Products() {
 
   return (
     <div>
-      {/* Header */}
-      <section className="border-b border-stone-100 bg-white">
-        <div className="container-page py-12 text-center sm:py-16">
-          <h1 className="text-4xl font-light tracking-wide text-stone-900 sm:text-5xl">{title}</h1>
-          <nav className="mt-4 flex items-center justify-center gap-2 text-xs text-stone-500">
-            <Link to="/" className="hover:text-stone-900">Home</Link>
-            <span>/</span>
-            <span className="text-stone-900">{title}</span>
-          </nav>
+      {/* ============ COMPACT HEADER ============ */}
+      <section className="border-b border-stone-200 bg-white">
+        <div className="container-page py-4 sm:py-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Breadcrumb */}
+            <nav className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.15em] text-stone-400">
+              <Link to="/" className="transition-colors hover:text-stone-900">
+                Home
+              </Link>
+              <span className="text-stone-300">/</span>
+              <span className="text-stone-900">{title}</span>
+            </nav>
+
+            {/* Search bar */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                setParam('search', searchInput.trim())
+              }}
+              className="relative w-full sm:w-64"
+            >
+              <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search products..."
+                className="w-full border border-stone-200 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-stone-900 focus:ring-2 focus:ring-stone-100"
+              />
+            </form>
+          </div>
         </div>
       </section>
 
-      <div className="container-page py-10">
-        {/* Intro + search */}
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <p className="max-w-2xl text-sm leading-relaxed text-stone-500">
-            Step into this season with distinction. Richman introduces a curated collection of{' '}
-            <strong className="font-semibold text-stone-800">premium formal wear</strong>, casual wear and accessories
-            crafted for the man who values sophistication, style, and structure.
-          </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              setParam('search', searchInput.trim())
-            }}
-            className="relative w-full sm:w-64"
-          >
-            <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search for products..."
-              className="w-full border border-stone-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-stone-900"
-            />
-          </form>
-        </div>
-
+      <div className="container-page py-6 sm:py-10">
         {/* Toolbar */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-y border-stone-100 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 pb-3">
           <p className="text-sm text-stone-500">
             {loading ? (
               'Loading…'

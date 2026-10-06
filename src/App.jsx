@@ -17,6 +17,7 @@ import ManageProducts from './pages/admin/ManageProducts'
 import ManageOrders from './pages/admin/ManageOrders'
 import ManageUsers from './pages/admin/ManageUsers'
 import ManageCategories from './pages/admin/ManageCategories'
+import ManageHome from './pages/admin/ManageHome'
 
 import ManageStock from './pages/manager/ManageStock'
 
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="products" element={<ManageProducts />} />
             <Route path="stock" element={<ManageStock />} />
             <Route path="categories" element={<ManageCategories />} />
+            <Route path="home" element={<ManageHome />} />
             <Route path="users" element={<ManageUsers />} />
           </Route>
 
@@ -75,6 +77,7 @@ export default function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="orders" element={<ManageOrders />} />
             <Route path="stock" element={<ManageStock />} />
+            <Route path="home" element={<ManageHome />} />
           </Route>
 
           <Route

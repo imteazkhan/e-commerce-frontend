@@ -7,8 +7,8 @@ import { useCategories } from '../context/CategoryContext'
 import Logo from './Logo'
 
 const fixedMenu = [
-  { to: '/products?discount=1', label: 'Sale', sale: true },
-  { to: '/products?sort=new', label: 'New Arrival' },
+  // { to: '/products?discount=1', label: 'Sale', sale: true },
+  // { to: '/products?sort=new', label: 'New Arrival' },
 ]
 
 function accountLinks(user) {
@@ -75,22 +75,27 @@ export default function Navbar() {
 
   const linkClass = (item) => {
     const active = current === item.to
-    if (item.sale) return active ? 'text-red-400' : 'text-red-500 hover:text-red-400'
-    return active ? 'text-brand-gold' : 'text-gray-300 hover:text-white'
+    if (item.sale) return active ? 'text-red-700' : 'text-red-600 hover:text-red-700'
+    return active ? 'text-brand-gold' : 'text-gray-700 hover:text-black'
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-stone-800 bg-brand-header text-white">
+    <header className="sticky top-0 z-50 text-gray-900">
+      {/* Glass background lives on its own layer so backdrop-filter doesn't trap the fixed drawer */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 border-b border-white/60 bg-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl backdrop-saturate-150"
+      />
       <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between gap-4 px-4 lg:px-8">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="-ml-1 p-1.5 text-gray-300 hover:text-white xl:hidden"
+            className="-ml-1 p-1.5 text-gray-700 hover:text-black xl:hidden"
             aria-label="Open menu"
           >
             <MenuIcon className="h-6 w-6" />
           </button>
-          <Logo />
+          <Logo light={false} />
         </div>
 
         {/* Desktop menu */}
@@ -110,7 +115,7 @@ export default function Navbar() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search"
-              className="h-8 w-full rounded-full bg-white py-1.5 pl-4 pr-8 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="h-8 w-full rounded-full border border-black/10 bg-white/50 py-1.5 pl-4 pr-8 text-xs text-gray-900 placeholder-gray-500 backdrop-blur-md transition-colors focus:border-brand-gold/70 focus:bg-white/80 focus:outline-none"
             />
             <button
               type="submit"
@@ -126,29 +131,29 @@ export default function Navbar() {
               <button
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-label="My account"
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-gold/60 text-[11px] font-semibold text-brand-gold transition-colors hover:bg-brand-gold hover:text-black"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-gold text-[11px] font-semibold text-brand-gold transition-colors hover:bg-brand-gold hover:text-black"
               >
                 {(user.name || user.email || 'U').charAt(0).toUpperCase()}
               </button>
               {menuOpen && (
-                <div className="absolute right-0 mt-4 w-56 animate-fade-up border border-gray-100 bg-white py-2 text-gray-800 shadow-lift">
+                <div className="absolute right-0 mt-4 w-56 animate-fade-up overflow-hidden rounded-xl border border-white/60 bg-white/70 py-2 text-gray-700 shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-xl">
                   <div className="px-4 py-2">
-                    <p className="truncate text-sm font-semibold">{user.name || 'Account'}</p>
+                    <p className="truncate text-sm font-semibold text-gray-900">{user.name || 'Account'}</p>
                     <p className="truncate text-xs text-gray-500">{user.email}</p>
                   </div>
-                  <div className="my-1 h-px bg-gray-100" />
+                  <div className="my-1 h-px bg-black/5" />
                   {links.map((l) => (
                     <Link
                       key={l.to}
                       to={l.to}
-                      className="block px-4 py-2 text-xs uppercase tracking-wider hover:bg-stone-50 hover:text-black"
+                      className="block px-4 py-2 text-xs uppercase tracking-wider hover:bg-black/5 hover:text-black"
                     >
                       {l.label}
                     </Link>
                   ))}
                   <button
                     onClick={handleLogout}
-                    className="block w-full px-4 py-2 text-left text-xs uppercase tracking-wider text-red-600 hover:bg-red-50"
+                    className="block w-full px-4 py-2 text-left text-xs uppercase tracking-wider text-red-600 hover:bg-red-500/10"
                   >
                     Log out
                   </button>
@@ -156,12 +161,12 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <Link to="/login" aria-label="My account" className="text-gray-300 hover:text-white">
+            <Link to="/login" aria-label="My account" className="text-gray-700 hover:text-black">
               <UserIcon className="h-5 w-5" />
             </Link>
           )}
 
-          <Link to="/cart" aria-label="Shopping cart" className="relative text-gray-300 hover:text-white">
+          <Link to="/cart" aria-label="Shopping cart" className="relative text-gray-700 hover:text-black">
             <BagIcon className="h-5 w-5" />
             <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-0.5 text-[10px] font-bold text-white">
               {cartCount > 99 ? '99+' : cartCount}
@@ -173,11 +178,11 @@ export default function Navbar() {
       {/* Mobile / tablet drawer */}
       {drawerOpen && (
         <div className="fixed inset-0 z-[60] xl:hidden">
-          <div className="absolute inset-0 animate-fade-in bg-black/60" onClick={() => setDrawerOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 flex w-80 max-w-[85%] flex-col overflow-y-auto bg-brand-header">
-            <div className="flex h-20 items-center justify-between border-b border-stone-800 px-5">
-              <Logo />
-              <button onClick={() => setDrawerOpen(false)} aria-label="Close menu" className="text-gray-400 hover:text-white">
+          <div className="absolute inset-0 animate-fade-in bg-black/20 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 flex w-80 max-w-[85%] flex-col overflow-y-auto border-r border-white/60 bg-white/75 backdrop-blur-2xl">
+            <div className="flex h-20 items-center justify-between border-b border-black/5 px-5">
+              <Logo light={false} />
+              <button onClick={() => setDrawerOpen(false)} aria-label="Close menu" className="text-gray-500 hover:text-black">
                 <CloseIcon className="h-6 w-6" />
               </button>
             </div>
@@ -188,14 +193,14 @@ export default function Navbar() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search"
-                className="h-10 w-full rounded-full bg-white pl-4 pr-10 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                className="h-10 w-full rounded-full border border-black/10 bg-white/60 pl-4 pr-10 text-sm text-gray-900 placeholder-gray-500 focus:border-brand-gold/70 focus:bg-white/90 focus:outline-none"
               />
               <SearchIcon className="pointer-events-none absolute right-9 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
             </form>
 
             <nav className="flex flex-col px-5 py-2 text-[13px] font-medium uppercase tracking-widest">
               {menu.map((item) => (
-                <Link key={item.to} to={item.to} className={`border-b border-stone-800/70 py-4 ${linkClass(item)}`}>
+                <Link key={item.to} to={item.to} className={`border-b border-black/5 py-4 ${linkClass(item)}`}>
                   {item.label}
                 </Link>
               ))}

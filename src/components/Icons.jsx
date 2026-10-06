@@ -85,6 +85,16 @@ export const PhoneIcon = (p) => (
 export const MailIcon = (p) => (
   <Icon {...p}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></Icon>
 )
+export const ChevronUpIcon = (p) => (
+  <Icon {...p}><path d="m6 15 6-6 6 6" /></Icon>
+)
+export const GripIcon = (p) => (
+  <Icon {...p} strokeWidth={0} fill="currentColor">
+    <circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" />
+    <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
+    <circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" />
+  </Icon>
+)
 export const ChevronLeftIcon = (p) => (
   <Icon {...p}><path d="m15 6-6 6 6 6" /></Icon>
 )
@@ -181,4 +191,16 @@ export const PauseIcon = (p) => (
 )
 export const PlayIcon = (p) => (
   <Icon {...p}><path d="M7 4.5v15l12-7.5-12-7.5z" /></Icon>
+)
+export const HomeIcon = (p) => (
+  <Icon {...p}><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 9.5V20h13V9.5" /><path d="M10 20v-5h4v5" /></Icon>
+)
+export const UploadIcon = (p) => (
+  <Icon {...p}><path d="M12 16V5M7 10l5-5 5 5M4 20h16" /></Icon>
+)
+export const EyeIcon = (p) => (
+  <Icon {...p}><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></Icon>
+)
+export const EyeOffIcon = (p) => (
+  <Icon {...p}><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.2 3.2M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a10 10 0 0 0 5.4-1.6" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18" /></Icon>
 )

@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../../services/api'
 import { useCategories } from '../../context/CategoryContext'
-import { CheckIcon, CloseIcon, EditIcon, ExternalIcon, PauseIcon, PlayIcon, TrashIcon } from '../../components/Icons'
+import { unwrap } from '../../utils/catalog'
+import {
+  CheckIcon, ChevronDownIcon, ChevronUpIcon, CloseIcon, EditIcon, ExternalIcon, GripIcon, PauseIcon, PlayIcon, TrashIcon,
+} from '../../components/Icons'
 import { Badge, Card, EmptyState, Field, Modal, PageHeader, btn, errorMessage, inputClass, useToast } from '../../components/admin/ui'
 
 const DELETE_CHOICES = [
@@ -96,16 +99,63 @@ function DeleteDialog({ category, categories, onClose, onDeleted }) {
 
 export default function ManageCategories() {
   const notify = useToast()
-  const { categories, reload } = useCategories()
+  const { categories, reload, setCategories } = useCategories()
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [renaming, setRenaming] = useState(null) // { id, name }
   const [deleting, setDeleting] = useState(null) // category
+  const [draggingId, setDraggingId] = useState(null)
+  const dragStart = useRef(null) // order before the drag, to save or roll back
 
   // Fresh product counts every time the page opens.
   useEffect(() => { reload() }, [reload])
 
   const paused = categories.filter((c) => c.is_active === false).length
+
+  // Updates the list (and the store menu) right away, then saves; rolls back if the save fails.
+  const saveOrder = async (next, previous) => {
+    setCategories(next)
+    try {
+      const res = await api.put('/categories/reorder', { ids: next.map((c) => c.id) })
+      setCategories(unwrap(res) || next)
+      notify('Menu order saved')
+    } catch (err) {
+      setCategories(previous)
+      notify(errorMessage(err), 'error')
+    }
+  }
+
+  const move = (index, step) => {
+    const next = [...categories]
+    const [item] = next.splice(index, 1)
+    next.splice(index + step, 0, item)
+    saveOrder(next, categories)
+  }
+
+  const handleDragStart = (e, c) => {
+    dragStart.current = categories
+    setDraggingId(c.id)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  // Reorder live while hovering so the admin sees where the row will land.
+  const handleDragOver = (e, target) => {
+    if (draggingId === null) return
+    e.preventDefault()
+    if (target.id === draggingId) return
+    const from = categories.findIndex((c) => c.id === draggingId)
+    const to = categories.findIndex((c) => c.id === target.id)
+    const next = [...categories]
+    next.splice(to, 0, next.splice(from, 1)[0])
+    setCategories(next)
+  }
+
+  const handleDragEnd = () => {
+    const previous = dragStart.current
+    setDraggingId(null)
+    dragStart.current = null
+    if (previous && previous.some((c, i) => c.id !== categories[i]?.id)) saveOrder(categories, previous)
+  }
 
   const handleAdd = async (e) => {
     e.preventDefault()
@@ -149,7 +199,7 @@ export default function ManageCategories() {
     <div className="max-w-5xl">
       <PageHeader
         title="Categories"
-        subtitle={`Active categories appear in the store's main menu and filters, in this order.${paused ? ` ${paused} paused.` : ''}`}
+        subtitle={`Active categories appear in the store's main menu and filters, in this order. Drag rows or use the arrows to rearrange.${paused ? ` ${paused} paused.` : ''}`}
       />
 
       <Card className="mb-6">
@@ -172,6 +222,7 @@ export default function ManageCategories() {
           <table className="w-full text-sm">
             <thead className="bg-stone-50 text-left text-xs uppercase tracking-wider text-stone-500">
               <tr>
+                <th className="w-px px-2 py-3 font-medium"><span className="sr-only">Order</span></th>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="hidden px-4 py-3 font-medium md:table-cell">Link</th>
@@ -180,10 +231,31 @@ export default function ManageCategories() {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100">
-              {categories.map((c) => {
+              {categories.map((c, index) => {
                 const isPaused = c.is_active === false
                 return (
-                  <tr key={c.id} className={isPaused ? 'bg-stone-50/70' : 'hover:bg-stone-50'}>
+                  <tr
+                    key={c.id}
+                    draggable={renaming?.id !== c.id}
+                    onDragStart={(e) => handleDragStart(e, c)}
+                    onDragOver={(e) => handleDragOver(e, c)}
+                    onDrop={(e) => e.preventDefault()}
+                    onDragEnd={handleDragEnd}
+                    className={`${draggingId === c.id ? 'bg-amber-50 opacity-60' : isPaused ? 'bg-stone-50/70' : 'hover:bg-stone-50'}`}
+                  >
+                    <td className="px-2 py-3">
+                      <div className="flex items-center gap-0.5">
+                        <span className="cursor-grab px-1 text-stone-400 active:cursor-grabbing" title="Drag to reorder">
+                          <GripIcon className="h-4 w-4" />
+                        </span>
+                        <button onClick={() => move(index, -1)} disabled={index === 0} className={`${btn.icon} !h-7 !w-7`} aria-label={`Move ${c.name} up`} title="Move up">
+                          <ChevronUpIcon className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => move(index, 1)} disabled={index === categories.length - 1} className={`${btn.icon} !h-7 !w-7`} aria-label={`Move ${c.name} down`} title="Move down">
+                          <ChevronDownIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       {renaming?.id === c.id ? (
                         <form onSubmit={handleRename} className="flex items-center gap-1">

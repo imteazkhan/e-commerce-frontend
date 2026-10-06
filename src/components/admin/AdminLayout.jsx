@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { BoxIcon, DashboardIcon, ExternalIcon, LayersIcon, ReceiptIcon, TagIcon, UsersIcon } from '../Icons'
+import { BoxIcon, DashboardIcon, ExternalIcon, HomeIcon, LayersIcon, ReceiptIcon, TagIcon, UsersIcon } from '../Icons'
 import { ToastProvider } from './ui'
 
 const adminNav = [
@@ -9,6 +9,7 @@ const adminNav = [
   { to: '/admin/products', label: 'Products', icon: BoxIcon },
   { to: '/admin/stock', label: 'Inventory', icon: LayersIcon },
   { to: '/admin/categories', label: 'Categories', icon: TagIcon },
+  { to: '/admin/home', label: 'Home page', icon: HomeIcon },
   { to: '/admin/users', label: 'Users', icon: UsersIcon },
 ]
 
@@ -16,6 +17,7 @@ const managerNav = [
   { to: '/manager', label: 'Dashboard', icon: DashboardIcon, end: true },
   { to: '/manager/orders', label: 'Orders', icon: ReceiptIcon },
   { to: '/manager/stock', label: 'Inventory', icon: LayersIcon },
+  { to: '/manager/home', label: 'Home page', icon: HomeIcon },
 ]
 
 /**

@@ -5,43 +5,6 @@ import ProductCard, { ProductCardSkeleton } from '../components/ProductCard'
 import { ChevronLeftIcon, ChevronRightIcon } from '../components/Icons'
 import { unwrap } from '../utils/catalog'
 import { useCategories } from '../context/CategoryContext'
-import { media } from '../utils/media'
-
-const slides = [
-  {
-    eyebrow: 'New Arrival',
-    title: 'Watch Collection',
-    text: 'Timeless precision engineered with premium rose gold and sapphire crystal.',
-    cta: 'Explore Timepieces',
-    to: '/products?category=accessories',
-    image: media.watch,
-    alt: 'Luxury gold chronograph watch',
-  },
-  {
-    eyebrow: 'Festive Edit',
-    title: 'Panjabi Collection',
-    text: 'Hand-finished embroidery and rich fabrics crafted for every celebration.',
-    cta: 'Shop Panjabi',
-    to: '/products?category=panjabi',
-    image: media.panjabi,
-    alt: 'Model in embroidered panjabi',
-  },
-  {
-    eyebrow: 'Summer Ready',
-    title: 'Polo Edition',
-    text: 'Breathable piqué cotton polos in a palette made for sunny days.',
-    cta: 'Shop Polos',
-    to: '/products?category=polo',
-    image: media.polo,
-    alt: 'Model in blue polo shirt',
-  },
-]
-
-const featuredCategories = [
-  { title: 'Polo Shirts', to: '/products?category=polo', image: media.polo, alt: 'Model in blue polo shirt on a yacht', position: 'object-top' },
-  { title: 'Panjabis', to: '/products?category=panjabi', image: media.panjabi, alt: 'Model in embroidered ethnic panjabi', position: 'object-center' },
-  { title: 'Casual Shirt', to: '/products?category=shirt', image: media.casualShirt, alt: 'Model in printed casual shirt and fedora', position: 'object-top' },
-]
 
 const giftCards = [
   {
@@ -70,17 +33,6 @@ const giftCards = [
   },
 ]
 
-const lifestyle = [
-  { image: media.lifestylePolos, alt: 'Men in stylish polo shirts and sunglasses' },
-  { image: media.lifestyleGreen, alt: 'Model outdoors wearing a green polo shirt' },
-  { image: media.lifestyleFormal, alt: 'Two gentlemen in formal button-down shirts' },
-]
-
-const editorial = [
-  { title: 'Our History', image: media.history, alt: 'Gentleman next to a luxury car' },
-  { title: 'Our Journal', image: media.journal, alt: 'Businessman working on a laptop outdoors' },
-]
-
 function SectionDivider({ children }) {
   return (
     <div className="section-divider my-8">
@@ -102,7 +54,7 @@ function HeroCarousel({ slides }) {
   }, [paused, slides.length])
 
   if (!slides.length) return null
-  // The slide list can shrink when an admin pauses a category.
+  // The slide list can shrink when staff hide an image.
   const current = index % slides.length
   const slide = slides[current]
 
@@ -145,11 +97,13 @@ function HeroCarousel({ slides }) {
             <p className="mx-auto mt-4 max-w-md text-xs uppercase tracking-widest text-stone-400 sm:text-sm lg:mx-0">
               {slide.text}
             </p>
-            <div className="mt-8">
-              <Link to={slide.to} className="btn-gold-outline">
-                {slide.cta}
-              </Link>
-            </div>
+            {slide.cta && slide.link && (
+              <div className="mt-8">
+                <Link to={slide.link} className="btn-gold-outline">
+                  {slide.cta}
+                </Link>
+              </div>
+            )}
           </div>
 
           <div className="relative z-10 flex animate-fade-in items-center justify-center">
@@ -168,7 +122,7 @@ function HeroCarousel({ slides }) {
         <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 gap-2">
           {slides.map((s, i) => (
             <button
-              key={s.title}
+              key={s.id}
               onClick={() => setIndex(i)}
               aria-label={`Go to slide ${i + 1}`}
               className={`h-1.5 rounded-full transition-all duration-300 ${
@@ -208,15 +162,28 @@ export default function Home() {
   const [featured, setFeatured] = useState([])
   const [newArrivals, setNewArrivals] = useState([])
   const [loading, setLoading] = useState(true)
+  const [banners, setBanners] = useState(null) // home page images, chosen in the admin/manager panel
   const { activeCategories, loading: categoriesLoading } = useCategories()
 
-  // Hide slides and tiles whose category has been paused or deleted by an admin.
-  const isLive = (to) => {
-    const slug = new URLSearchParams(to.split('?')[1]).get('category')
+  // Staff choose which images show; if one links to a paused or deleted category,
+  // keep the image but drop the link so shoppers don't land on an empty page.
+  const isLive = (link) => {
+    const slug = new URLSearchParams((link || '').split('?')[1]).get('category')
     return !slug || categoriesLoading || activeCategories.some((a) => a.slug === slug)
   }
-  const liveSlides = slides.filter((s) => isLive(s.to))
-  const tiles = featuredCategories.filter((c) => isLive(c.to))
+  const section = (name) =>
+    (banners || []).filter((b) => b.section === name).map((b) => (isLive(b.link) ? b : { ...b, link: null }))
+  const liveSlides = section('hero')
+  const tiles = section('tile')
+  const lifestyle = section('lifestyle')
+  const editorial = section('editorial')
+
+  useEffect(() => {
+    api
+      .get('/home-banners')
+      .then((res) => setBanners(unwrap(res) || []))
+      .catch(() => setBanners([]))
+  }, [])
 
   useEffect(() => {
     Promise.all([
@@ -233,29 +200,32 @@ export default function Home() {
 
   return (
     <div>
-      <HeroCarousel slides={liveSlides} />
+      {/* Keep the slider's space while images load so the page doesn't jump. */}
+      {banners === null ? <div className="min-h-[460px] bg-black lg:min-h-[580px]" /> : <HeroCarousel slides={liveSlides} />}
 
       {/* Featured categories */}
+      {tiles.length > 0 && (
       <section className="container-page py-12 lg:py-16">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
           {tiles.map((c) => (
-            <article key={c.title} className="group relative h-[520px] overflow-hidden shadow-sm lg:h-[590px]">
+            <article key={c.id} className="group relative h-[520px] overflow-hidden shadow-sm lg:h-[590px]">
               <img
                 src={c.image}
-                alt={c.alt}
-                className={`h-full w-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105 ${c.position}`}
+                alt={c.alt || c.title || ''}
+                className="h-full w-full object-cover object-top transition-transform duration-700 ease-in-out group-hover:scale-105"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-end bg-gradient-to-t from-black/70 via-black/20 to-transparent p-4 pb-12 text-center">
                 <div className="border-y border-white/50 px-6 py-2 backdrop-blur-[2px] transition-all group-hover:border-white">
-                  <span className="mb-0.5 block text-[11px] uppercase tracking-[0.25em] text-gray-200">Shop Now</span>
+                  {c.link && <span className="mb-0.5 block text-[11px] uppercase tracking-[0.25em] text-gray-200">Shop Now</span>}
                   <h3 className="font-serif text-2xl font-medium tracking-wide text-white lg:text-3xl">{c.title}</h3>
                 </div>
               </div>
-              <Link to={c.to} aria-label={`Browse ${c.title}`} className="absolute inset-0" />
+              {c.link && <Link to={c.link} aria-label={`Browse ${c.title}`} className="absolute inset-0" />}
             </article>
           ))}
         </div>
       </section>
+      )}
 
       {/* Summer collection */}
       <section id="summer-collection" className="container-page py-8">
@@ -314,13 +284,14 @@ export default function Home() {
       </section>
 
       {/* Lifestyle gallery */}
+      {lifestyle.length > 0 && (
       <section className="container-page py-12">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
           {lifestyle.map((l) => (
-            <div key={l.alt} className="group relative aspect-[4/5] overflow-hidden shadow-sm sm:aspect-auto sm:h-[580px]">
+            <div key={l.id} className="group relative aspect-[4/5] overflow-hidden shadow-sm sm:aspect-auto sm:h-[580px]">
               <img
                 src={l.image}
-                alt={l.alt}
+                alt={l.alt || ''}
                 loading="lazy"
                 className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
               />
@@ -328,28 +299,33 @@ export default function Home() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Editorial */}
+      {editorial.length > 0 && (
       <section className="container-page pb-4">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
           {editorial.map((e) => (
-            <div key={e.title} className="group relative h-[320px] cursor-pointer overflow-hidden shadow-sm sm:h-[380px]">
+            <div key={e.id} className="group relative h-[320px] overflow-hidden shadow-sm sm:h-[380px]">
               <img
                 src={e.image}
-                alt={e.alt}
+                alt={e.alt || e.title || ''}
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 p-6 text-center transition-colors group-hover:bg-black/35">
-                <h3 className="mb-2 font-serif text-3xl tracking-wider text-white sm:text-4xl">{e.title}</h3>
-                <a href="#" className="text-xs font-light uppercase tracking-widest text-white/90 underline underline-offset-4 hover:text-white">
-                  Read more
-                </a>
+                {e.title && <h3 className="mb-2 font-serif text-3xl tracking-wider text-white sm:text-4xl">{e.title}</h3>}
+                {e.link && (
+                  <Link to={e.link} className="text-xs font-light uppercase tracking-widest text-white/90 underline underline-offset-4 hover:text-white">
+                    Read more
+                  </Link>
+                )}
               </div>
             </div>
           ))}
         </div>
       </section>
+      )}
     </div>
   )
 }

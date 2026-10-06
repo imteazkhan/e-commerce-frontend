@@ -33,7 +33,7 @@ export const CategoryProvider = ({ children }) => {
   const activeCategories = categories.filter((c) => c.is_active !== false)
 
   return (
-    <CategoryContext.Provider value={{ categories, activeCategories, loading, reload }}>
+    <CategoryContext.Provider value={{ categories, activeCategories, loading, reload, setCategories }}>
       {children}
     </CategoryContext.Provider>
   )
